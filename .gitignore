@@ -1,0 +1,34 @@
+# Virtual Environment
+venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Exports
+exports/dashboard_summary.json
+exports/dashboard_export.csv
+exports/powerbi_dataset.json
+
+# Logs
+logs/dashboard.log
+
+# Data files
+data/telemetry.json
+data/uptime.json
+data/incidents.json
+data/log_intelligence.json
+
+# AWS credentials
+.aws/
+
+# Environment variables
+.env
+
+# JetBrains IDE files
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db

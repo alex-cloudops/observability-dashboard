@@ -1,0 +1,36 @@
+{
+    "sources": [
+        {
+            "name": "Cloud Telemetry Agent",
+            "repo": "cloud-telemetry-agent",
+            "type": "telemetry",
+            "data_file": "data/telemetry.json",
+            "enabled": true,
+            "description": "System metrics — CPU, memory, disk"
+        },
+        {
+            "name": "Synthetic Uptime Monitor",
+            "repo": "synthetic-uptime-monitor",
+            "type": "uptime",
+            "data_file": "data/uptime.json",
+            "enabled": true,
+            "description": "Endpoint availability and response times"
+        },
+        {
+            "name": "Incident Alert Pipeline",
+            "repo": "incident-alert-pipeline",
+            "type": "incidents",
+            "data_file": "data/incidents.json",
+            "enabled": true,
+            "description": "Incident records and severity distribution"
+        },
+        {
+            "name": "Log Intelligence Engine",
+            "repo": "log-intelligence-engine",
+            "type": "log_intelligence",
+            "data_file": "data/log_intelligence.json",
+            "enabled": true,
+            "description": "Log health status and error rate analysis"
+        }
+    ]
+}
