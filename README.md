@@ -178,7 +178,7 @@ The `powerbi_dataset.json` export is structured for direct import into Power BI 
 - [ ] Historical trending across multiple runs
 - [ ] REST API endpoint for real-time dashboard queries
 - [ ] Automated scheduled runs
-- [ ] Unit tests with pytest
+- [x] Unit tests with pytest
 
 ---
 
