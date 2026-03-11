@@ -173,12 +173,12 @@ The `powerbi_dataset.json` export is structured for direct import into Power BI 
 
 ## Roadmap
 
-- [ ] Live data pipeline from all portfolio repos
+- [x] Unit tests with pytest
+- [x] Multi-source data aggregation across all portfolio repos
 - [ ] Power BI Desktop dashboard with full visualizations
 - [ ] Historical trending across multiple runs
 - [ ] REST API endpoint for real-time dashboard queries
 - [ ] Automated scheduled runs
-- [x] Unit tests with pytest
 
 ---
 
