@@ -150,6 +150,7 @@ Every run generates three export files in `exports/`:
 ## Power BI Integration
 
 The `powerbi_dataset.json` export is structured for direct import into Power BI Desktop:
+![CloudOps Observability Dashboard](assets/BI Dash.png)
 
 1. Open Power BI Desktop
 2. **Get Data** → **JSON**
@@ -175,7 +176,7 @@ The `powerbi_dataset.json` export is structured for direct import into Power BI 
 
 - [x] Unit tests with pytest
 - [x] Multi-source data aggregation across all portfolio repos
-- [ ] Power BI Desktop dashboard with full visualizations
+- [x] Power BI Desktop dashboard with full visualizations
 - [ ] Historical trending across multiple runs
 - [ ] REST API endpoint for real-time dashboard queries
 - [ ] Automated scheduled runs
