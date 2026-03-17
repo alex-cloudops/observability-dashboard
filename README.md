@@ -1,6 +1,6 @@
 # observability-dashboard
 
-A production-grade observability dashboard that aggregates telemetry, uptime, incident, and log intelligence data from across a CloudOps ecosystem — transforming raw operational data into unified health scoring, structured JSON summaries, and Power BI ready exports.
+A production-grade observability dashboard that aggregates telemetry, uptime, incident, and log intelligence data from across a CloudOps ecosystem — transforming raw operational data into unified health scoring, structured JSON summaries, Power BI ready exports, and a live Grafana dashboard powered by Prometheus.
 
 Built as the crown jewel of the Alex-CloudOps observability portfolio.
 
@@ -8,12 +8,14 @@ Built as the crown jewel of the Alex-CloudOps observability portfolio.
 
 ## Overview
 
-`observability-dashboard` is the central nervous system of the CloudOps portfolio ecosystem. It pulls data from all four portfolio repositories, transforms and scores each data source, calculates an overall ecosystem health status, and exports the results in multiple formats — including a Power BI ready dataset for executive-level visualization.
+`observability-dashboard` is the central nervous system of the CloudOps portfolio ecosystem. It pulls data from all four portfolio repositories, transforms and scores each data source, calculates an overall ecosystem health status, and exports the results in multiple formats — including a live Grafana dashboard with real-time metric visualization.
 
 This project demonstrates senior-level CloudOps and observability engineering competencies:
 - Multi-source data aggregation
 - Metric transformation and health scoring
 - Ecosystem-wide observability
+- Live Prometheus metrics exposition
+- Grafana dashboard with NOC-grade threshold alerting
 - Power BI dataset generation
 - CSV and JSON export pipelines
 
@@ -24,11 +26,15 @@ This project demonstrates senior-level CloudOps and observability engineering co
 cloud-telemetry-agent  ──┐
 synthetic-uptime-monitor ──┤
 incident-alert-pipeline ──┤──▶ aggregator.py ──▶ transformer.py ──▶ summary.py ──▶ exporter.py
-log-intelligence-engine ──┘                                                            │
-                                                                                       ▼
-                                                                          exports/dashboard_summary.json
-                                                                          exports/dashboard_export.csv
-                                                                          exports/powerbi_dataset.json
+log-intelligence-engine ──┘                │
+                                           ▼
+                                  metrics_exporter.py
+                                           │
+                                           ▼
+                                  Prometheus (port 9090)
+                                           │
+                                           ▼
+                                  Grafana Dashboard (port 3000)
 ```
 
 ---
@@ -38,6 +44,8 @@ log-intelligence-engine ──┘                                               
 - **Multi-source aggregation** — Pulls data from all 4 portfolio repos
 - **Health scoring** — HEALTHY, DEGRADED, CRITICAL per component and ecosystem
 - **Unified dashboard view** — Single pane of glass across the entire ecosystem
+- **Live Prometheus metrics** — Real-time metrics exposition on port 8000
+- **Grafana dashboard** — 8-panel NOC dashboard with threshold-based color alerting
 - **Power BI ready exports** — JSON dataset and CSV for direct Power BI import
 - **Config-driven sources** — Add or disable data sources via `sources.json`
 - **Zero hardcoded values** — All configuration via `config.ini`
@@ -51,8 +59,10 @@ log-intelligence-engine ──┘                                               
 | Language | Python 3.x |
 | AWS SDK | boto3 / botocore |
 | HTTP | requests |
+| Metrics Exposition | prometheus-client |
+| Metrics Collection | Prometheus |
+| Visualization | Grafana |
 | Exports | JSON, CSV |
-| Visualization | Power BI Desktop (roadmap) |
 | Configuration | configparser |
 
 ---
@@ -61,18 +71,21 @@ log-intelligence-engine ──┘                                               
 ```
 observability-dashboard/
 ├── config/
-│   ├── config.ini         # Dashboard configuration
-│   └── sources.json       # Data source definitions
+│   ├── config.ini             # Dashboard configuration
+│   └── sources.json           # Data source definitions
 ├── dashboard/
 │   ├── __init__.py
-│   ├── aggregator.py      # Multi-source data aggregation
-│   ├── exporter.py        # JSON, CSV, Power BI exports
-│   ├── summary.py         # Ecosystem health scoring
-│   └── transformer.py     # Data transformation and normalization
+│   ├── aggregator.py          # Multi-source data aggregation
+│   ├── exporter.py            # JSON, CSV, Power BI exports
+│   ├── metrics_exporter.py    # Prometheus metrics exposition
+│   ├── summary.py             # Ecosystem health scoring
+│   └── transformer.py         # Data transformation and normalization
 ├── data/
-│   └── .gitkeep           # Live data files dropped here
+│   └── .gitkeep               # Live data files dropped here
 ├── exports/
-│   └── .gitkeep           # Generated exports output here
+│   └── .gitkeep               # Generated exports output here
+├── grafana/
+│   └── dashboard.json         # Grafana dashboard — importable
 ├── logs/
 │   └── .gitkeep
 ├── tests/
@@ -87,6 +100,8 @@ observability-dashboard/
 
 ### Prerequisites
 - Python 3.8+
+- Prometheus
+- Grafana
 - AWS account (Free Tier compatible)
 - AWS CLI installed and configured
 
@@ -95,14 +110,50 @@ observability-dashboard/
 git clone https://github.com/Alex-CloudOps/observability-dashboard.git
 cd observability-dashboard
 python -m venv venv
-venv\Scripts\activate  # Windows
+source venv/bin/activate  # Linux/Mac
 pip install -r requirements.txt
 ```
 
-### Run the Dashboard
+### Run the Metrics Exporter
+```bash
+python -m dashboard.metrics_exporter
+```
+Metrics will be available at `http://localhost:8000/metrics`
+
+### Run Prometheus
+```bash
+prometheus --config.file=prometheus.yml
+```
+Prometheus UI available at `http://localhost:9090`
+
+### Import the Grafana Dashboard
+1. Open Grafana at `http://localhost:3000`
+2. Go to **Dashboards** → **Import**
+3. Upload `grafana/dashboard.json`
+4. Select your Prometheus data source
+5. Click **Import**
+
+### Run the Dashboard Export Pipeline
 ```bash
 python main.py
 ```
+
+---
+
+## Grafana Dashboard
+
+The included Grafana dashboard provides 8 live panels with NOC-grade threshold alerting:
+
+| Panel | Metric | Thresholds |
+|---|---|---|
+| CPU Usage % | `cloudops_cpu_percent` | Green < 75, Yellow < 90, Red ≥ 90 |
+| Memory Usage % | `cloudops_memory_percent` | Green < 90, Yellow < 95, Red ≥ 95 |
+| Disk Usage % | `cloudops_disk_percent` | Green < 85, Yellow < 90, Red ≥ 90 |
+| Uptime % | `cloudops_uptime_percent` | Red < 90, Yellow < 99, Green ≥ 99 |
+| Avg Response Time | `cloudops_avg_response_time_ms` | Green < 2000ms, Yellow < 4000ms, Red ≥ 4000ms |
+| Open Incidents | `cloudops_open_incidents` | Green = 0, Yellow ≥ 1, Red ≥ 5 |
+| Critical Incidents | `cloudops_critical_incidents` | Green = 0, Orange ≥ 1, Red ≥ 3 |
+| Log Error Rate % | `cloudops_log_error_rate` | Green < 5, Yellow < 10, Red ≥ 10 |
 
 ---
 
@@ -147,20 +198,6 @@ Every run generates three export files in `exports/`:
 
 ---
 
-## Power BI Integration
-
-The `powerbi_dataset.json` export is structured for direct import into Power BI Desktop:
-![CloudOps Observability Dashboard](assets/BI Dash.png)
-
-1. Open Power BI Desktop
-2. **Get Data** → **JSON**
-3. Select `exports/powerbi_dataset.json`
-4. Build visualizations using the pre-structured dataset
-
-> Full Power BI dashboard development is on the roadmap.
-
----
-
 ## Ecosystem Integration
 
 | Repository | Data Type | Metrics Provided |
@@ -174,12 +211,16 @@ The `powerbi_dataset.json` export is structured for direct import into Power BI 
 
 ## Roadmap
 
-- [x] Unit tests with pytest
-- [x] Multi-source data aggregation across all portfolio repos
-- [x] Power BI Desktop dashboard with full visualizations
+- [x] Multi-source data aggregation
+- [x] Ecosystem health scoring
+- [x] JSON, CSV, Power BI exports
+- [x] Prometheus metrics exposition
+- [x] Grafana dashboard with NOC-grade thresholds
+- [ ] Live data pipeline from all portfolio repos
 - [ ] Historical trending across multiple runs
 - [ ] REST API endpoint for real-time dashboard queries
 - [ ] Automated scheduled runs
+- [ ] Unit tests with pytest
 
 ---
 
