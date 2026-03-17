@@ -208,6 +208,31 @@ Every run generates three export files in `exports/`:
 | `log-intelligence-engine` | Log Intel | Error rates, health status |
 
 ---
+## Live Data Sources
+
+The metrics exporter collects all 8 Prometheus metrics from live sources — zero sample data, zero fallback.
+
+| Metric | Source | Method |
+|---|---|---|
+| CPU Usage % | Local machine | psutil |
+| Memory Usage % | Local machine | psutil |
+| Disk Usage % | Local machine | psutil |
+| Uptime % | 5 live HTTP targets | requests |
+| Avg Response Time | 5 live HTTP targets | requests |
+| Open Incidents | AWS CloudWatch Alarms | boto3 |
+| Critical Incidents | AWS CloudWatch Alarms | boto3 |
+| Log Error Rate | logs/dashboard.log | Python file scan |
+
+### CloudWatch Alarms
+Three alarms are configured in AWS CloudWatch (us-east-2) and queried in real time:
+
+| Alarm | Metric | Threshold |
+|---|---|---|
+| `cloudops-cpu-critical` | cpu_percent | ≥ 90% |
+| `cloudops-memory-critical` | memory_percent | ≥ 95% |
+| `cloudops-disk-critical` | disk_percent | ≥ 90% |
+
+When any alarm enters ALARM state, the incident counters in Grafana increment automatically.
 
 ## Roadmap
 
@@ -216,7 +241,7 @@ Every run generates three export files in `exports/`:
 - [x] JSON, CSV, Power BI exports
 - [x] Prometheus metrics exposition
 - [x] Grafana dashboard with NOC-grade thresholds
-- [ ] Live data pipeline from all portfolio repos
+- [x] Live data pipeline from all portfolio repos
 - [ ] Historical trending across multiple runs
 - [ ] REST API endpoint for real-time dashboard queries
 - [ ] Automated scheduled runs
